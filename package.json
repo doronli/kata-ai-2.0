@@ -13,7 +13,10 @@
     "test": "jest"
   },
   "jest": {
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "testPathIgnorePatterns": [
+      "/dist/"
+    ]
   },
   "keywords": [],
   "author": "",
