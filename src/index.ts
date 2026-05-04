@@ -1,7 +1,11 @@
 export {
   calculateDiscounts,
-  type AppliedRule,
-  type Cart,
-  type CartItem,
-  type DiscountResult,
 } from "./discountEngine";
+
+export type {
+  AppliedRule,
+  Cart,
+  CartItem,
+  CartItemCategory,
+  DiscountResult,
+} from "./discountEngine.type";

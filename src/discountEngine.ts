@@ -1,144 +1,47 @@
-export type CartItem = {
-  id: string;
-  name: string;
-  unitPrice: number;
-  quantity: number;
-  category?: any;
-};
+import type { Cart, DiscountResult } from "./discountEngine.type";
+import {
+  calculateAppliedRules,
+  createRule,
+  summarizeCart,
+} from "./discountEngine.util";
+import type { DiscountRule } from "./discountEngine.type";
 
-export type Cart = { customerId: string; items: CartItem[] };
-
-export type AppliedRule = {
-  ruleId: string;
-  description: string;
-  amount: number;
-};
-
-export type DiscountResult = {
-  originalTotal: number;
-  finalTotal: number;
-  appliedRules: AppliedRule[];
-};
+const discountRules: DiscountRule[] = [
+  createRule("A", "10% cart discount (>300)", (_, summary) =>
+    summary.originalTotal > 300 ? summary.originalTotal * 0.1 : 0,
+  ),
+  createRule("B", "BOOK bundle discount (3+ books)", (_, summary) =>
+    summary.bookQuantity >= 3 ? 15 : 0,
+  ),
+  createRule("C", "50% off cheapest item (>5 items total)", (_, summary) =>
+    summary.totalItemQuantity > 5 ? summary.cheapestUnitPrice / 2 : 0,
+  ),
+  createRule(
+    "D",
+    "5% discount on ELECTRONICS total (≥2 ELECTRONICS items)",
+    (_, summary) =>
+      summary.electronicsQuantity >= 2 ? summary.electronicsTotal * 0.05 : 0,
+  ),
+  createRule("E", "FOOD category discount (>100)", (_, summary) =>
+    summary.foodTotal > 100 ? 20 : 0,
+  ),
+  createRule("F", "Free shipping (>1000)", (_, summary) =>
+    summary.originalTotal > 1000 ? 50 : 0,
+  ),
+  createRule("G", "VIP customer discount (5%)", (cart, summary) =>
+    cart.customerId.startsWith("vip") ? summary.originalTotal * 0.05 : 0,
+  ),
+];
 
 export function calculateDiscounts(cart: Cart): DiscountResult {
-  let x = 0;
-  let y = 0;
-  let z = 0;
-  let cheapest = 0;
-  let count = 0;
-  const rules: AppliedRule[] = [];
-  let running = 0;
-
-  for (let i = 0; i < cart.items.length; i += 1) {
-    const current = cart.items[i];
-    const line = current.unitPrice * current.quantity;
-
-    x += line;
-    count += current.quantity;
-
-    if (current.category === "BOOK") {
-      y += current.quantity;
-    }
-
-    if (current.category === "ELECTRONICS") {
-      z += line;
-    }
-
-    if (current.category === "FOOD") {
-      running += line;
-    }
-
-    if (cheapest === 0 || current.unitPrice < cheapest) {
-      cheapest = current.unitPrice;
-    }
-  }
-
-  running = x;
-
-  if (running > 300) {
-    const amount = (running * 10) / 100;
-    rules.push({
-      ruleId: "A",
-      description: "10% cart discount (>300)",
-      amount: -amount,
-    });
-    running -= amount;
-  }
-
-  if (y >= 3) {
-    rules.push({
-      ruleId: "B",
-      description: "BOOK bundle discount (3+ books)",
-      amount: -15,
-    });
-    running -= 15;
-  }
-
-  if (count > 5) {
-    const amount = cheapest / 2;
-    rules.push({
-      ruleId: "C",
-      description: "50% off cheapest item (>5 items total)",
-      amount: -amount,
-    });
-    running -= amount;
-  }
-
-  if (count >= 2 && z > 0) {
-    const amount = (running * 5) / 100;
-    rules.push({
-      ruleId: "D",
-      description: "5% discount on ELECTRONICS total (≥2 ELECTRONICS items)",
-      amount: -amount,
-    });
-    running -= amount;
-  }
-
-  if (running > 100) {
-    let foodTotal = 0;
-
-    for (let i = 0; i < cart.items.length; i += 1) {
-      if (cart.items[i].category === "FOOD") {
-        foodTotal += cart.items[i].unitPrice * cart.items[i].quantity;
-      }
-    }
-
-    if (foodTotal > 100) {
-      rules.push({
-        ruleId: "E",
-        description: "FOOD category discount (>100)",
-        amount: -20,
-      });
-      running -= 20;
-    }
-  }
-
-  if (running > 1000) {
-    rules.push({
-      ruleId: "F",
-      description: "Free shipping (>1000)",
-      amount: -50,
-    });
-    running -= 50;
-  }
-
-  if (cart.customerId.indexOf("vip") === 0) {
-    const amount = (running * 5) / 100;
-    rules.push({
-      ruleId: "G",
-      description: "VIP customer discount (5%)",
-      amount: -amount,
-    });
-    running -= amount;
-  }
-
-  if (running < 0) {
-    running = 0;
-  }
+  const summary = summarizeCart(cart);
+  const appliedRules = calculateAppliedRules(cart, summary, discountRules);
+  const totalDiscount = appliedRules.reduce((sum, rule) => sum + Math.abs(rule.amount), 0);
+  const finalTotal = Math.max(0, summary.originalTotal - totalDiscount);
 
   return {
-    originalTotal: x,
-    finalTotal: Number(running.toFixed(2)),
-    appliedRules: rules,
+    originalTotal: summary.originalTotal,
+    finalTotal: Number(finalTotal.toFixed(2)),
+    appliedRules,
   };
 }
