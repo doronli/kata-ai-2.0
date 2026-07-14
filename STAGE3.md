@@ -46,7 +46,7 @@ Performance review: ...
 Output: | Severity | Issue | Why | File | Recommendation |
 ```
 
-- [ ] All 3 created with correct YAML frontmatter
+- [x] All 3 created with correct YAML frontmatter
 
 ---
 
@@ -64,7 +64,7 @@ agents: [review-security, review-standards, review-performance]
 - "Found by" column: `Gemini, Claude` (consensus) or `GPT` (unique finding)
 - Mark consensus: "2/3 models agree on..."
 
-- [ ] Updated with subagent metadata + orchestration logic
+- [x] Updated with subagent metadata + orchestration logic
 
 ---
 
@@ -72,21 +72,21 @@ agents: [review-security, review-standards, review-performance]
 
 Invoke `solid-reviewer` with: "Review my #codebase"
 
-- [ ] All 3 subagents run in parallel
-- [ ] Output shows "Found by" attribution
-- [ ] No duplicate findings (merged correctly)
-- [ ] Time < 2 min
+- [x] All 3 subagents run in parallel
+- [x] Output shows "Found by" attribution
+- [x] No duplicate findings (merged correctly)
+- [x] Time < 2 min
 
 ---
 
 ### 4. Validation
 
-- [ ] All 3 subagent files created
-- [ ] Orchestrator calls all 3 in parallel
-- [ ] Findings attributed to correct models
-- [ ] Consensus detected (e.g., "Claude, GPT-4")
-- [ ] Unique findings preserved (e.g., "Gemini only")
-- [ ] Unified output table shown
+- [x] All 3 subagent files created
+- [x] Orchestrator calls all 3 in parallel
+- [x] Findings attributed to correct models
+- [x] Consensus detected (e.g., "Claude, GPT-4")
+- [x] Unique findings preserved (e.g., "Gemini only")
+- [x] Unified output table shown
 
 ---
 
